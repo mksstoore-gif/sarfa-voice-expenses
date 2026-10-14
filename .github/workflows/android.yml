@@ -50,7 +50,7 @@ jobs:
             gradle --no-daemon connectedDebugAndroidTest --stacktrace
             # Gradle uninstalls the test app after connected tests. Reinstall to extract real PDF fixtures.
             adb install -r app/build/outputs/apk/debug/app-debug.apk
-            adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+            adb install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
             adb shell am instrument -w -e class com.sarfa.voice.ReportPdfTest com.sarfa.voice.test/androidx.test.runner.AndroidJUnitRunner | tee pdf-instrumentation.log
             grep -q 'INSTRUMENTATION_CODE: -1' pdf-instrumentation.log
             adb shell run-as com.sarfa.voice cat files/test-report.pdf > sarfa-tested-report.pdf
