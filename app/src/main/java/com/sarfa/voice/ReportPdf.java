@@ -44,7 +44,7 @@ public final class ReportPdf {
                 PdfDocument.Page docPage = pdf.startPage(info);
                 Canvas c = docPage.getCanvas();
                 c.drawColor(Color.WHITE);
-                title(c, first ? "تقرير صَرْفة المالي" : "تقرير صَرْفة — متابعة", 64);
+                title(c, first ? "تقرير صَرْفة المالي" : "تقرير صَرْفة — متابعة", 43);
                 if (first) {
                     rect(c, 32, 95, 563, 220, SOFT, 18);
                     rtl(c, "الرصيد المتاح", 537, 114, 12, false, GREY, 230);
@@ -87,9 +87,9 @@ public final class ReportPdf {
 
     private static void title(Canvas c, String text, int y) {
         rtl(c, text, 560, y, 23, true, INK, 510);
-        line(c, 32, y + 14, 563, y + 14, GREEN);
+        line(c, 32, y + 40, 563, y + 40, GREEN);
         String date = new SimpleDateFormat("yyyy/MM/dd", Locale.US).format(new Date());
-        latin(c, date, 32, y - 7, 11, GREY);
+        latin(c, date, 32, y + 20, 11, GREY);
     }
     private static void rect(Canvas c, float l, float t, float r, float b, int color, float radius) {
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
