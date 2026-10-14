@@ -33,6 +33,11 @@ jobs:
           name: Sarfa-Android-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: ignore
+      - name: Enable KVM acceleration for Android emulator
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm
+          fi
       - name: Emulator integration tests (confirmation, CRUD, real PDF render)
         uses: reactivecircus/android-emulator-runner@v2
         with:
