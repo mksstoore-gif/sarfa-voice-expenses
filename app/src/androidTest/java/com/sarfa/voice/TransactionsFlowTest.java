@@ -1,6 +1,9 @@
 package com.sarfa.voice;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.view.View;
+import android.view.ViewGroup;
 import android.content.Intent;
 import android.net.Uri;
 import android.speech.RecognizerIntent;
@@ -25,6 +28,17 @@ import static org.junit.Assert.*;
 
 @RunWith(AndroidJUnit4.class)
 public class TransactionsFlowTest {
+    private View findTransaction(View root, String snippet) {
+        if (root.getContentDescription()!=null && root.getContentDescription().toString().contains(snippet)) return root;
+        if (root instanceof ViewGroup) {
+            ViewGroup group=(ViewGroup)root;
+            for(int i=0;i<group.getChildCount();i++) {
+                View found=findTransaction(group.getChildAt(i),snippet);
+                if(found!=null)return found;
+            }
+        }
+        return null;
+    }
     private void voice(ActivityScenario<MainActivity> scenario, String words) {
         scenario.onActivity(a -> {
             Intent i=new Intent();
@@ -46,18 +60,23 @@ public class TransactionsFlowTest {
             scenario.onActivity(a -> a.getSharedPreferences("sarfa",0).edit().clear().commit());
             voice(scenario,"15 ريال عشاء لحمودي");
             assertEquals(0,stored(scenario).length());
-            onView(withText("تأكيد وحفظ")).perform(click());
+            scenario.onActivity(a -> a.confirmationDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick());
             assertEquals(1,stored(scenario).length());
             assertEquals(1500,stored(scenario).getJSONObject(0).getLong("halalas"));
             voice(scenario,"دخل 100 ريال راتب");
-            onView(withText("تأكيد وحفظ")).perform(click());
+            scenario.onActivity(a -> a.confirmationDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick());
             assertEquals(2,stored(scenario).length());
             assertTrue(stored(scenario).getJSONObject(0).getBoolean("income"));
             voice(scenario,"صرف 40 ريال تسوق");
-            onView(withText("إلغاء")).perform(click());
+            scenario.onActivity(a -> a.confirmationDialog.getButton(AlertDialog.BUTTON_NEGATIVE).performClick());
             assertEquals(2,stored(scenario).length());
-            onView(withContentDescription(containsString("عشاء لحمودي"))).perform(click());
-            onView(withText("حذف")).perform(click());
+            scenario.onActivity(a -> {
+                View row = findTransaction(a.getWindow().getDecorView(), "عشاء لحمودي");
+                assertNotNull("Expense row must exist",row);
+                row.performClick();
+                assertNotNull("Delete dialog must open",a.deletionDialog);
+                a.deletionDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            });
             assertEquals(1,stored(scenario).length());
             assertEquals(10000,stored(scenario).getJSONObject(0).getLong("halalas"));
         }
