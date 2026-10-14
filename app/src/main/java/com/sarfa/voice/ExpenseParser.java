@@ -95,7 +95,7 @@ public final class ExpenseParser {
 
         String note = normalized.replaceFirst("(?<![0-9])" + Pattern.quote(found.isEmpty() ? "NO_DIGITS" : found.get(0)) + "(?![0-9])", " ");
         if (!amountWords.isEmpty()) note = note.replaceFirst(Pattern.quote(amountWords), " ");
-        note = note.replaceAll("(?i)(ريال|ريالات|ريالاً|رس|ر\\.س|سعودي|دخل|ايداع|راتب|استلمت|وصلني|قبضت|مكافاة|صرفت|صرف|مصروف|دفعت|اشتريت|شريت|سددت)", " ");
+        note = note.replaceAll("(?i)(ريال|ريالات|ريالاً|رس|ر\\.س|سعودي|دخل|ايداع|استلمت|وصلني|قبضت|صرفت|صرف|مصروف|دفعت|اشتريت|شريت|سددت)", " ");
         note = note.replaceAll("\\s+", " ").trim();
         if (note.isEmpty()) note = income ? "دخل عام" : "مصروف عام";
         return new Result(income, amount, category, note, original);
@@ -138,7 +138,8 @@ public final class ExpenseParser {
                 if (number >= 1000) {
                     total += (subtotal == 0 ? 1 : subtotal) * number;
                     subtotal = 0;
-                } else subtotal += number;
+                } else if (number == 100 && subtotal > 0 && subtotal < 10) subtotal *= 100;
+                else subtotal += number;
             } else if (seen && (token.equals("و") || token.equals("ريال") || token.equals("ريالات"))) {
                 // Currency or conjunction ends the number phrase.
             }
