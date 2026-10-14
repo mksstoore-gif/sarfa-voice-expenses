@@ -42,6 +42,7 @@ public class MainActivity extends Activity {
     private final List<Ledger.Entry> entries = new ArrayList<>();
     private LinearLayout screen;
     private boolean pendingIncome = false;
+    private boolean ledgerReadable = true;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -256,7 +257,11 @@ public class MainActivity extends Activity {
                 .setNegativeButton("إلغاء", (d,w)->{})
                 .setPositiveButton("حذف", (d,w)->{
                     entries.removeIf(item -> item.id.equals(e.id));
-                    writeEntries();
+                    if (!writeEntries()) {
+                        entries.add(e);
+                        Collections.sort(entries,(a,b)->Long.compare(b.timestamp,a.timestamp));
+                        Toast.makeText(this,"تعذر حفظ الحذف",Toast.LENGTH_LONG).show();
+                    }
                     showDashboard();
                 }).show());
         return row;
@@ -358,6 +363,7 @@ public class MainActivity extends Activity {
 
     private void readEntries() {
         entries.clear();
+        ledgerReadable = true;
         String saved=getSharedPreferences("sarfa",MODE_PRIVATE).getString("entries","[]");
         try {
             JSONArray a=new JSONArray(saved);
@@ -368,13 +374,16 @@ public class MainActivity extends Activity {
             }
             Collections.sort(entries,(a1,b1)->Long.compare(b1.timestamp,a1.timestamp));
         } catch(Exception ex) {
-            // Never replace a damaged ledger with an empty record: allow inspection / recovery.
+            ledgerReadable = false;
+            entries.clear();
+            // Never overwrite a damaged ledger with an empty record.
             new AlertDialog.Builder(this).setTitle("تعذر قراءة السجل")
                 .setMessage("بياناتك ما زالت محفوظة كما هي. تجنب إضافة عمليات جديدة قبل استعادة السجل.")
                 .setPositiveButton("حسنًا",null).show();
         }
     }
     private boolean writeEntries() {
+        if (!ledgerReadable) return false;
         JSONArray a=new JSONArray();
         try {
             for (Ledger.Entry e:entries) {
