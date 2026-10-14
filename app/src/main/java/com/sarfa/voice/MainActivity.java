@@ -43,6 +43,8 @@ public class MainActivity extends Activity {
     private LinearLayout screen;
     private boolean pendingIncome = false;
     private boolean ledgerReadable = true;
+    AlertDialog confirmationDialog;
+    AlertDialog deletionDialog;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -252,7 +254,8 @@ public class MainActivity extends Activity {
         money.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
         row.addView(money);
         row.setContentDescription(e.note+"، "+Ledger.money(e.halalas)+" ريال. اضغط للحذف");
-        row.setOnClickListener(v -> new AlertDialog.Builder(this).setTitle("حذف العملية؟")
+        row.setOnClickListener(v -> {
+            deletionDialog = new AlertDialog.Builder(this).setTitle("حذف العملية؟")
                 .setMessage(e.note + " — " + Ledger.money(e.halalas) + " ر.س\nسيتم تعديل الرصيد بعد الحذف.")
                 .setNegativeButton("إلغاء", (d,w)->{})
                 .setPositiveButton("حذف", (d,w)->{
@@ -263,7 +266,9 @@ public class MainActivity extends Activity {
                         Toast.makeText(this,"تعذر حفظ الحذف",Toast.LENGTH_LONG).show();
                     }
                     showDashboard();
-                }).show());
+                }).create();
+            deletionDialog.show();
+        });
         return row;
     }
 
@@ -347,6 +352,7 @@ public class MainActivity extends Activity {
                 }
             }).create();
         dialog.show();
+        confirmationDialog = dialog;
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(GREEN);
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(GREEN);
     }
